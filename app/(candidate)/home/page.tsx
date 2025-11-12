@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
+import NavBar from "../home/component/navbar"
+
 export default function Page() {
 
   const router = useRouter();
@@ -36,7 +38,7 @@ export default function Page() {
   
   return (
    <>
-   <Button onClick={handleLogout}>Logout</Button>
+   <NavBar></NavBar>
    </>
   );
 }

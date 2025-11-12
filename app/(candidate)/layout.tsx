@@ -36,7 +36,5 @@ export default function CandidateLayout({ children }: { children: React.ReactNod
         verifyToken();
     }, [router]);
 
-    if (loading) return <p>Loading...</p>;
-
     return <>{children}</>;
 }
