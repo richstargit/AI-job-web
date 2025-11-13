@@ -8,7 +8,7 @@ export default function NavBar(){
 
     const router = useRouter();
     
-      const handleLogout = async () => {
+    const handleLogout = async () => {
     
         try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/logout`, {
@@ -35,6 +35,32 @@ export default function NavBar(){
         }
       };
 
+      const handleChangeRole = async () => {
+    
+        try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/changerole`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",  
+    
+        });
+        const data = await res.json();
+        if(!data.isSuccess){
+            console.log("error")
+            router.push("/login");
+            return
+        }
+        router.replace("/hr");
+        } catch (error) {
+          console.log(error)
+          router.push("/login");
+        } finally {
+    
+        }
+      };
+
     return(<>
         <div className="navbar mx-auto my-3 bg-neutral shadow-sm text-neutral-50 rounded-lg w-[98%]">
   <div className="flex-1">
@@ -42,20 +68,29 @@ export default function NavBar(){
   </div>
   <div className="flex-none">
     <ul className="menu menu-horizontal px-1">
-        <li> <Dialog>
-              <DialogTrigger asChild>
-                <Button className="bg-stone-100 text-black hover:bg-stone-300 mr-5">
-                  Resume
-                </Button>
-              </DialogTrigger>
+      <li> <Button className="bg-stone-100 text-black hover:bg-stone-300 mr-5" onClick={handleChangeRole}>HR</Button> </li>
+        <li>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button className="bg-stone-100 text-black hover:bg-stone-300 mr-5">
+            Resume
+          </Button>
+        </DialogTrigger>
 
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Resume</DialogTitle>
-                </DialogHeader>
-                <UploadPopup />
-              </DialogContent>
-            </Dialog> </li>
+        <DialogContent
+          className="w-full sm:max-w-5xl max-h-[90vh] overflow-y-auto"
+        >
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              Resume
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* ตรงนี้คือ layout สวย ๆ ที่เราทำไว้ */}
+          <UploadPopup />
+        </DialogContent>
+      </Dialog>
+    </li>
       <li> <Button className="bg-stone-100 text-black hover:bg-stone-300 mr-5" onClick={handleLogout}>Logout</Button> </li>
     </ul>
   </div>
