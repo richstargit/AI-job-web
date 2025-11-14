@@ -2,12 +2,20 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+interface RoomInfo {
+  isJoin: boolean;
+  room_code: string | null;
+}
+
 interface JobCardProps {
   id: string;
   title: string;
   description: string;
   matchingScore?: number;
   onViewDetails: () => void;
+  room?: RoomInfo | null;               // 👈 เพิ่ม
+  onCreateRoom?: () => void;            // 👈 เพิ่ม
+  onJoinRoom?: () => void;              // 👈 เพิ่ม
 }
 
 export const JobCard = ({
@@ -16,6 +24,9 @@ export const JobCard = ({
   description,
   matchingScore,
   onViewDetails,
+  room,
+  onCreateRoom,
+  onJoinRoom,
 }: JobCardProps) => {
   const getScoreColor = (score: number) => {
     if (score >= 0.7) return "text-success";
@@ -61,6 +72,38 @@ export const JobCard = ({
         >
           View Details
         </Button>
+        {room === null && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={onCreateRoom}
+          >
+            Create Room
+          </Button>
+        )}
+
+        {room && room.isJoin === false && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            disabled
+          >
+            In Interview
+          </Button>
+        )}
+
+        {room && room.isJoin === true && room.room_code && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={onJoinRoom}
+          >
+            Join Room
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

@@ -5,12 +5,19 @@ import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import JobDetail from "./JobDetail";
 import { DialogTitle } from "@radix-ui/react-dialog";
+import { useRouter } from "next/navigation";
+
+interface RoomInfo {
+  isJoin: boolean;
+  room_code: string | null;
+}
 
 interface Job {
   _id: string;
   title: string;
   description: string;
   user_email: string;
+  room: RoomInfo | null;
 }
 
 interface MatchResult {
@@ -50,6 +57,7 @@ export default function Score() {
   const [calculatingAll, setCalculatingAll] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [msgerror, setmsgerror] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     fetchJobs();
@@ -114,6 +122,37 @@ export default function Score() {
     }
   };
 
+  const handleCreateRoom = async (jobId: string) => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/room/create/${jobId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      }
+    );
+
+    const data = await res.json();
+    if (!data.isSuccess) {
+      setmsgerror(data.error || "Failed to create room");
+      return;
+    }
+
+    const roomCode = data.room_code as string;
+    // ถ้าอยากให้อยู่หน้าเดิมแล้วรีเฟรชสถานะห้องด้วย:
+    // await fetchJobs();
+    // แล้วค่อย redirect
+    router.push(`/interview/${roomCode}`);
+  } catch (err) {
+    setmsgerror("Failed to create room");
+  }
+};
+
+const handleJoinRoom = (roomCode: string) => {
+  router.push(`/interview/${roomCode}`);
+};
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -164,18 +203,24 @@ export default function Score() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {jobs.map((job) => {
-              const match = matchResults.get(job._id);
-              return (
-                <JobCard
-                  key={job._id}
-                  id={job._id}
-                  title={job.title}
-                  description={job.description}
-                  matchingScore={match?.score}
-                  onViewDetails={() => setSelectedJobId(job._id)}
-                />
-              );
-            })}
+  const match = matchResults.get(job._id);
+  return (
+    <JobCard
+      key={job._id}
+      id={job._id}
+      title={job.title}
+      description={job.description}
+      matchingScore={match?.score}
+      // 👇 เพิ่ม 3 props นี้
+      room={job.room}
+      onCreateRoom={() => handleCreateRoom(job._id)}
+      onJoinRoom={() =>
+        job.room?.room_code && handleJoinRoom(job.room.room_code)
+      }
+      onViewDetails={() => setSelectedJobId(job._id)}
+    />
+  );
+})}
           </div>
         )}
       </div>

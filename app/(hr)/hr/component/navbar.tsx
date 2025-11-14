@@ -51,7 +51,7 @@ export default function NavBar() {
         router.push("/login");
         return
       }
-      router.replace("/hr");
+      router.replace("/home");
     } catch (error) {
       console.log(error)
       router.push("/login");
