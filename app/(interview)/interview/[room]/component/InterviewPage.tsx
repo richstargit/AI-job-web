@@ -12,6 +12,8 @@ import { Card } from "@/components/ui/card";
 interface ChatHistoryItem {
   senderID: string;
   message: string;
+  username:string;
+  isSelf:boolean;
 }
 
 interface RoomInfo {
@@ -82,9 +84,9 @@ export default function InterviewPage({ room }: InterviewPageProps) {
           history.map((h, index) => ({
             id: `history-${index}`,
             senderID: h.senderID,
-            username: h.senderID, // ตอนนี้ยังไม่มี username จาก backend → ใช้ senderID แทนชั่วคราว
+            username: h.username, // ตอนนี้ยังไม่มี username จาก backend → ใช้ senderID แทนชั่วคราว
             message: h.message,
-            isSelf: false,
+            isSelf: h.isSelf,
           }))
         );
       } catch (error) {

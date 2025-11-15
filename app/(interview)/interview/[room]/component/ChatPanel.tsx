@@ -39,7 +39,7 @@ export function ChatPanel({ messages, onSendMessage, title }: ChatPanelProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0 overflow-y-auto">
-          <div className="px-3 py-3 space-y-2">
+          <ScrollArea className="md:h-full px-5 py-3 space-y-2">
             {messages.map((msg) => {
               if (msg.isSystem) {
                 return (
@@ -77,7 +77,7 @@ export function ChatPanel({ messages, onSendMessage, title }: ChatPanelProps) {
               );
             })}
             <div ref={bottomRef} />
-          </div>
+          </ScrollArea>
       </CardContent>
       <CardFooter className="border-t px-3 py-2">
         <form
