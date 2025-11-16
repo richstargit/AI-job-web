@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { QuestionsProvider } from "./interview/[room]/component/QuestionContext";
+import { FollowUpsProvider } from "./interview/[room]/component/Follow-upContext";
 
 export default function CandidateLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -34,5 +36,7 @@ export default function CandidateLayout({ children }: { children: React.ReactNod
         verifyToken();
     }, [router]);
 
-    return <>{children}</>;
+    return <QuestionsProvider><FollowUpsProvider>
+    {children}
+    </FollowUpsProvider></QuestionsProvider>;
 }

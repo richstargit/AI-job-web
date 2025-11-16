@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { ChatMessage } from "./InterviewPage";
 import { cn } from "@/lib/utils";
+import { useQuestions } from "./QuestionContext";
 
 interface ChatPanelProps {
   messages: ChatMessage[];
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string,question?:{Question:string,topic:string}[]) => void;
   title?: string;
 }
 
@@ -19,10 +20,34 @@ export function ChatPanel({ messages, onSendMessage, title }: ChatPanelProps) {
   const [text, setText] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
+  const { questionsByTopic } = useQuestions();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    onSendMessage(text);
+
+    const ques :{Question:string,topic:string}[] = []
+
+    questionsByTopic.skills.map((d,_)=>{
+      ques.push({
+        Question:d.question,
+        topic:"skills"
+      })
+    })
+    questionsByTopic.experience.map((d,_)=>{
+      ques.push({
+        Question:d.question,
+        topic:"experience"
+      })
+    })
+    questionsByTopic.education.map((d,_)=>{
+      ques.push({
+        Question:d.question,
+        topic:"education"
+      })
+    })
+
+    onSendMessage(text,ques);
     setText("");
   };
 

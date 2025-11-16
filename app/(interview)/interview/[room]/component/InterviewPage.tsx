@@ -8,6 +8,8 @@ import Candidate from "./interview_candidate";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useQuestions } from "./QuestionContext";
+import { useFollowUps } from "./Follow-upContext";
 
 interface ChatHistoryItem {
   senderID: string;
@@ -40,6 +42,15 @@ interface InterviewPageProps {
   room: string;
 }
 
+type TopicKey = "skills" | "education" | "experience";
+
+interface FollowUpItem {
+  id: string;              // unique ใน queue
+  text: string;            // เนื้อหา follow-up
+  sourceQuestionId: number;
+  sourceTopic: TopicKey;
+}
+
 export default function InterviewPage({ room }: InterviewPageProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -49,6 +60,10 @@ export default function InterviewPage({ room }: InterviewPageProps) {
   const [socketError, setSocketError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const [ending, setEnding] = useState(false);
+  const { questionsByTopic, setQuestionsByTopic } = useQuestions();
+  const {followUpQueue, setFollowUpQueue} = useFollowUps();
+  const [questionAll,setQuestionAll] = useState<{Question:string,topic:string}[]>([])
+  const questionAllRef = useRef<{ Question: string; topic: string }[]>([]);
 
   // โหลด room history เพื่อตัดสินว่าเป็น HR หรือ Candidate
   useEffect(() => {
@@ -150,6 +165,49 @@ export default function InterviewPage({ room }: InterviewPageProps) {
       ]);
     });
 
+    socket.on("select_question",(payload:any)=>{
+      if(payload&&payload.index!=-1){
+        console.log(Number(payload.index))
+        const qa = questionAllRef.current;
+        const topic : string = qa[payload.index].topic
+        if (topic != "skills"&& topic != "education" && topic != "experience") {
+          return
+        }
+        const Ques : string = qa[payload.index].Question
+        let addItems: FollowUpItem[] = [];
+        setQuestionsByTopic((prev) => {
+          const update = prev[topic].map((q) => {
+            if(q.question!=Ques){
+              return q
+            }
+            if(q.isSelect){
+              return q
+            }
+            q.isSelect = true
+            addItems = q.followUpTopics?.map((t, idx) => ({
+                  id: `${topic}-${q.id}-${idx}`,
+                  text: t,
+                  sourceQuestionId: q.id,
+                  sourceTopic: topic,
+                })) ?? [];
+            return q
+          })
+          return {...prev,[topic]:update}
+        })
+
+        if (addItems.length) {
+          setFollowUpQueue((prev) => {
+            const merged = [...prev];
+            addItems.forEach((item) => {
+              if (!merged.some((m) => m.id === item.id)) merged.push(item);
+            });
+            return merged;
+          });
+        }
+
+      }
+    })
+
     socket.on("room_closed", (payload: any) => {
       setMessages((prev) => [
         ...prev,
@@ -192,17 +250,28 @@ export default function InterviewPage({ room }: InterviewPageProps) {
     };
   }, [roomInfo, isHR, router]);
 
-  const handleSendMessage = (text: string) => {
+  useEffect(() => {
+    questionAllRef.current = questionAll;
+  }, [questionAll]);
+
+  const handleSendMessage = (text: string,question:{
+    Question:string,topic:string
+  }[]=[]
+) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
     const socket = socketRef.current;
     if (!socket || !roomInfo) return;
 
+    setQuestionAll(question)
+    questionAllRef.current = question;
+
     // ส่งขึ้น server
     socket.emit("send_message", {
       room_code: roomInfo.room_code,
       message: trimmed,
+      questions: question
     });
 
     // เพิ่มลง local ทันที (เพราะ server ไม่ส่งกลับให้คนส่งเอง)
