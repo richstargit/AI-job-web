@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { ChatPanel } from "./ChatPanel";
 import type { ChatMessage } from "./InterviewPage";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import SuggestedQuestionsPanel from "./SuggestedQuestions";
 import CandidateInfoCard from "./CandidateCard";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -88,9 +87,10 @@ interface HRProps {
   roomInfo: RoomInfo;
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
+  onEvaluate: (question: string,answer: string,chatindex:Number) => void;
 }
 
-export default function HR({ roomInfo, messages, onSendMessage }: HRProps) {
+export default function HR({ roomInfo, messages, onSendMessage,onEvaluate }: HRProps) {
   const [candidate, setCandidate] = useState<CandidateInfo | null>(null);
   const [loadingCandidate, setLoadingCandidate] = useState(false);
   const [candidateError, setCandidateError] = useState("");
@@ -160,6 +160,7 @@ export default function HR({ roomInfo, messages, onSendMessage }: HRProps) {
         <ChatPanel
           messages={messages}
           onSendMessage={onSendMessage}
+          onEvaluate={onEvaluate}
           title="Interview Chat"
         />
       </div>

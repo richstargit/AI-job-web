@@ -424,12 +424,12 @@ export default function SuggestedQuestionsPanel({
             <div className="space-y-2 ">
               {[...followUpQueue].slice().reverse().map((item, idx) => (
                 <div
-                  key={item.id}
+                  key={idx}
                   className={`w-full rounded-lg border ${FollowUpRead>=followUpQueue.length-idx?"border-border bg-background hover:bg-muted/60":"border-primary bg-primary/5 shadow-sm"} px-3 py-2 text-left text-xs transition-all`}
                 >
                   <div className="mb-1 flex items-center justify-between gap-2">
                     <span className="text-[12px] font-mono text-muted-foreground">
-                      {item.sourceTopic} Question-{item.sourceQuestionId}
+                      Question-{idx}
                     </span>
                   </div>
                   <p className="text-[14px] font-mono">{item.text}</p>

@@ -2,13 +2,8 @@
 
 import { createContext, useContext, useState } from "react";
 
-type TopicKey = "skills" | "education" | "experience";
-
 interface FollowUpItem {
-  id: string;              // unique ใน queue
-  text: string;            // เนื้อหา follow-up
-  sourceQuestionId: number;
-  sourceTopic: TopicKey;
+  text: string;
 }
 
 type FollowUp = FollowUpItem[]

@@ -29,6 +29,13 @@ interface RoomInfo {
   created_at: string;
 }
 
+export interface Evaluate{
+  accuracy: number;   // ✅ ใช้ตัวเล็ก
+  depth: number;
+  attitude: number;
+  relevance: number;
+}
+
 export interface ChatMessage {
   id: string;
   senderID: string | null;
@@ -36,6 +43,7 @@ export interface ChatMessage {
   message: string;
   isSelf: boolean;
   isSystem?: boolean;
+  isEvaluate?: Evaluate;
 }
 
 interface InterviewPageProps {
@@ -174,7 +182,7 @@ export default function InterviewPage({ room }: InterviewPageProps) {
           return
         }
         const Ques : string = qa[payload.index].Question
-        let addItems: FollowUpItem[] = [];
+        // let addItems: FollowUpItem[] = [];
         setQuestionsByTopic((prev) => {
           const update = prev[topic].map((q) => {
             if(q.question!=Ques){
@@ -184,28 +192,52 @@ export default function InterviewPage({ room }: InterviewPageProps) {
               return q
             }
             q.isSelect = true
-            addItems = q.followUpTopics?.map((t, idx) => ({
-                  id: `${topic}-${q.id}-${idx}`,
-                  text: t,
-                  sourceQuestionId: q.id,
-                  sourceTopic: topic,
-                })) ?? [];
+            // addItems = q.followUpTopics?.map((t, idx) => ({
+            //       id: `${topic}-${q.id}-${idx}`,
+            //       text: t,
+            //       sourceQuestionId: q.id,
+            //       sourceTopic: topic,
+            //     })) ?? [];
             return q
           })
           return {...prev,[topic]:update}
         })
 
-        if (addItems.length) {
-          setFollowUpQueue((prev) => {
-            const merged = [...prev];
-            addItems.forEach((item) => {
-              if (!merged.some((m) => m.id === item.id)) merged.push(item);
-            });
-            return merged;
-          });
-        }
+        // if (addItems.length) {
+        //   setFollowUpQueue((prev) => {
+        //     const merged = [...prev];
+        //     addItems.forEach((item) => {
+        //       if (!merged.some((m) => m.id === item.id)) merged.push(item);
+        //     });
+        //     return merged;
+        //   });
+        // }
 
       }
+    })
+
+    socket.on("evaluate_result",(payload: any)=>{
+      console.log(payload)
+      setMessages((prv)=>prv.map((d,idx)=>{
+        if(idx!=payload.chatindex){
+          return d
+        }
+        return {...d,isEvaluate:{
+          accuracy:payload.accuracy,
+          depth:payload.depth,
+          relevance:payload.relevance,
+          attitude:payload.attitude
+        }}
+      }))
+      if (!payload.followUp){
+        return
+      }
+      const additem = payload.followUp.map((d:string)=>{
+        return {
+          "text":d
+        }
+      })
+      setFollowUpQueue((prv)=>[...prv,...additem])
     })
 
     socket.on("room_closed", (payload: any) => {
@@ -301,6 +333,18 @@ export default function InterviewPage({ room }: InterviewPageProps) {
     );
   }
 
+  const handleEvaluateQuestion = (question: string,answer: string,chatindex:Number) => {
+    const socket = socketRef.current;
+    if (!socket || !roomInfo) return;
+    socket.emit("evaluate_question", {
+      jobID:roomInfo.jobID,
+      question:question,
+      answer:answer,
+      chatindex:chatindex,
+      room_code: roomInfo.room_code,
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
@@ -340,6 +384,7 @@ export default function InterviewPage({ room }: InterviewPageProps) {
             roomInfo={roomInfo}
             messages={messages}
             onSendMessage={handleSendMessage}
+            onEvaluate={handleEvaluateQuestion}
           />
         ) : (
           <Candidate
