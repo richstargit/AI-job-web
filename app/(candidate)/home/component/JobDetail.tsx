@@ -326,6 +326,7 @@ export default function JobDetail({ job, matchResult }: JobDetailProps) {
           </Card>
 
           {/* ========= Responsibilities ========= */}
+          {matchResult.responsibilities &&
           <Card className="md:col-span-2">
             <CardHeader>
               {(() => {
@@ -367,6 +368,7 @@ export default function JobDetail({ job, matchResult }: JobDetailProps) {
               )}
             </CardContent>
           </Card>
+          }
         </div>
       )}
     </div>
